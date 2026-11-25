@@ -1,0 +1,25 @@
+# FinOps workspace registry entry (verified against live discovery 2026-11-25).
+workspace_id: "2660247253212705"
+workspace_name: "dhiraj-dev"
+account_id: "e495f372-1af2-49a6-8c25-08e7eff9cacf"
+region_id: "aws_default"
+environment: "dev"
+business_unit: "unassigned"
+owner_team: "unassigned"
+cost_center: "UNALLOCATED"
+enabled: true
+
+source_access:
+  mode: "workspace_identity"          # dev: collector runs as the workspace user identity
+  credential_reference: null          # set to a service principal reference in prod
+
+sources:
+  - billing_usage
+  - billing_list_prices
+  - compute_clusters
+  - compute_node_timeline
+  - jobs
+  - job_run_timeline
+  - query_history
+  - genie_usage
+  - ai_gateway_usage

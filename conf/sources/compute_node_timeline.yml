@@ -1,0 +1,39 @@
+# Source: compute node timeline metrics (optional; verified readable, currently 0 rows).
+source_id: "compute_node_timeline"
+enabled: true
+required: false
+source_type: "databricks_system_table"
+source_object: "system.compute.node_timeline"
+
+target:
+  schema: "bronze"
+  table: "compute_node_timeline_raw"
+
+ingestion:
+  mode: "incremental"
+  watermark_column: "start_time"     # verified TIMESTAMP; interval start. No ingestion timestamp exists
+  watermark_type: "timestamp"
+  lookback_hours: 72
+  primary_key_columns: ["workspace_id", "cluster_id", "instance_id", "start_time"]
+  merge_columns: ["workspace_id", "cluster_id", "instance_id", "start_time"]
+  write_strategy: "merge"
+  batch_size: 100000
+  schedule_ref: "standard_hourly"
+
+derived_keys:
+  source_record_id_column: null
+  source_record_id_expression: "concat_ws('|', workspace_id, cluster_id, instance_id, cast(start_time as string))"
+  event_time_column: "start_time"
+  updated_time_column: null
+
+schema:
+  contract_ref: "compute_node_timeline_source"
+  additive_columns: "capture_and_review"
+  unexpected_type_change: "quarantine_and_alert"
+  missing_required_columns: "fail_source"
+
+quality_rules: []
+
+retention:
+  bronze_days: 90
+  silver_days: 90

@@ -1,0 +1,9 @@
+# Named schedules referenced by sources and regions via schedule_ref.
+# Jobs deploy PAUSED by default; production schedules require explicit approval.
+schedules:
+  standard_hourly:
+    quartz_cron_expression: "0 0 * * * ?"
+    timezone_id: "UTC"
+  standard_daily_0200_utc:
+    quartz_cron_expression: "0 0 2 * * ?"
+    timezone_id: "UTC"

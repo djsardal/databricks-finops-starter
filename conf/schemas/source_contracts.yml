@@ -1,0 +1,278 @@
+# Data contracts for discovered system-table sources.
+# Every column/type below was VERIFIED by DESCRIBE / information_schema against the
+# live workspace tables on 2026-11-25. "struct" columns are landed whole in the
+# Bronze payload, so nested (intra-struct) additions are tolerated as additive drift.
+contracts_version: "1.0.0"
+
+contracts:
+  billing_usage_source:
+    source_object: "system.billing.usage"
+    verified_at: "2026-11-25"
+    columns:
+      account_id: {type: string}
+      workspace_id: {type: string}
+      record_id: {type: string}
+      sku_name: {type: string}
+      cloud: {type: string}
+      usage_start_time: {type: timestamp}
+      usage_end_time: {type: timestamp}
+      usage_date: {type: date}
+      custom_tags: {type: "map<string,string>"}
+      usage_unit: {type: string}
+      usage_quantity: {type: "decimal(38,18)"}
+      usage_metadata: {type: struct}
+      identity_metadata: {type: struct}
+      record_type: {type: string}
+      ingestion_date: {type: date}
+      billing_origin_product: {type: string}
+      product_features: {type: struct}
+      usage_type: {type: string}
+    required_columns: [account_id, workspace_id, record_id, sku_name, cloud, usage_start_time, usage_date, usage_quantity, usage_unit, ingestion_date]
+
+  billing_list_prices_source:
+    source_object: "system.billing.list_prices"
+    verified_at: "2026-11-25"
+    columns:
+      account_id: {type: string}
+      price_start_time: {type: timestamp}
+      price_end_time: {type: timestamp}
+      sku_name: {type: string}
+      cloud: {type: string}
+      currency_code: {type: string}
+      usage_unit: {type: string}
+      pricing: {type: struct}
+    required_columns: [sku_name, cloud, currency_code, usage_unit, price_start_time, pricing]
+
+  compute_clusters_source:
+    source_object: "system.compute.clusters"
+    verified_at: "2026-11-25"
+    columns:
+      account_id: {type: string}
+      workspace_id: {type: string}
+      cluster_id: {type: string}
+      cluster_name: {type: string}
+      owned_by: {type: string}
+      create_time: {type: timestamp}
+      delete_time: {type: timestamp}
+      driver_node_type: {type: string}
+      worker_node_type: {type: string}
+      worker_count: {type: bigint}
+      min_autoscale_workers: {type: bigint}
+      max_autoscale_workers: {type: bigint}
+      auto_termination_minutes: {type: bigint}
+      enable_elastic_disk: {type: boolean}
+      tags: {type: "map<string,string>"}
+      cluster_source: {type: string}
+      init_scripts: {type: "array<string>"}
+      aws_attributes: {type: struct}
+      azure_attributes: {type: struct}
+      gcp_attributes: {type: struct}
+      driver_instance_pool_id: {type: string}
+      worker_instance_pool_id: {type: string}
+      dbr_version: {type: string}
+      change_time: {type: timestamp}
+      change_date: {type: date}
+      data_security_mode: {type: string}
+      policy_id: {type: string}
+    required_columns: [account_id, workspace_id, cluster_id, change_time]
+
+  compute_node_timeline_source:
+    source_object: "system.compute.node_timeline"
+    verified_at: "2026-11-25"
+    columns:
+      account_id: {type: string}
+      workspace_id: {type: string}
+      cluster_id: {type: string}
+      instance_id: {type: string}
+      start_time: {type: timestamp}
+      end_time: {type: timestamp}
+      driver: {type: boolean}
+      cpu_user_percent: {type: double}
+      cpu_system_percent: {type: double}
+      cpu_wait_percent: {type: double}
+      mem_used_percent: {type: double}
+      mem_swap_percent: {type: double}
+      network_sent_bytes: {type: bigint}
+      network_received_bytes: {type: bigint}
+      disk_free_bytes_per_mount_point: {type: "map<string,bigint>"}
+      node_type: {type: string}
+      private_ip: {type: string}
+      spark_jvm_heap_usage_bytes: {type: bigint}
+      spark_jvm_heap_limit_bytes: {type: bigint}
+      shared_container_memory_limit_bytes: {type: bigint}
+      spark_container_memory_used_bytes: {type: bigint}
+      spark_container_memory_file_cache_bytes: {type: bigint}
+    required_columns: [account_id, workspace_id, cluster_id, instance_id, start_time, end_time]
+
+  jobs_source:
+    source_object: "system.lakeflow.jobs"
+    verified_at: "2026-11-25"
+    columns:
+      account_id: {type: string}
+      workspace_id: {type: string}
+      job_id: {type: string}
+      name: {type: string}
+      creator_id: {type: string}
+      tags: {type: "map<string,string>"}
+      run_as: {type: string}
+      change_time: {type: timestamp}
+      delete_time: {type: timestamp}
+      description: {type: string}
+      trigger: {type: struct}
+      trigger_type: {type: string}
+      run_as_user_name: {type: string}
+      creator_user_name: {type: string}
+      paused: {type: boolean}
+      timeout_seconds: {type: bigint}
+      health_rules: {type: "array<struct<metric:string,operator:string,value:bigint>>"}
+      deployment: {type: struct}
+      create_time: {type: timestamp}
+      triggers: {type: "array<struct<file_arrival:struct<url:string,min_time_between_triggers_seconds:int,wait_after_last_change_seconds:int>,periodic:struct<interval:int,units:string>,table_update:struct<table_names:array<string>,min_time_between_triggers_seconds:bigint,wait_after_last_change_seconds:bigint,condition:string>,continuous:struct<enabled:boolean>,schedule:struct<quartz_cron_expression:string,timezone_id:string>,paused:boolean,job_completion:struct<monitored_jobs:array<struct<workspace_id:string,job_id:string>>,if_status:string>>>"}
+    required_columns: [account_id, workspace_id, job_id, change_time]
+
+  job_run_timeline_source:
+    source_object: "system.lakeflow.job_run_timeline"
+    verified_at: "2026-11-25"
+    columns:
+      account_id: {type: string}
+      workspace_id: {type: string}
+      job_id: {type: string}
+      run_id: {type: string}
+      period_start_time: {type: timestamp}
+      period_end_time: {type: timestamp}
+      trigger_type: {type: string}
+      result_state: {type: string}
+      run_type: {type: string}
+      run_name: {type: string}
+      compute_ids: {type: "array<string>"}
+      termination_code: {type: string}
+      job_parameters: {type: "map<string,map<string,string>>"}
+      source_task_run_id: {type: string}
+      root_task_run_id: {type: string}
+      compute: {type: "array<struct<type:string,cluster_id:string,warehouse_id:string>>"}
+      termination_type: {type: string}
+      setup_duration_seconds: {type: bigint}
+      queue_duration_seconds: {type: bigint}
+      run_duration_seconds: {type: bigint}
+      cleanup_duration_seconds: {type: bigint}
+      execution_duration_seconds: {type: bigint}
+    required_columns: [account_id, workspace_id, job_id, run_id, period_start_time, period_end_time]
+
+  query_history_source:
+    source_object: "system.query.history"
+    verified_at: "2026-11-25"
+    columns:
+      account_id: {type: string}
+      workspace_id: {type: string}
+      statement_id: {type: string}
+      executed_by: {type: string}
+      session_id: {type: string}
+      execution_status: {type: string}
+      compute: {type: struct}
+      executed_by_user_id: {type: string}
+      statement_text: {type: string}
+      statement_type: {type: string}
+      error_message: {type: string}
+      client_application: {type: string}
+      client_driver: {type: string}
+      total_duration_ms: {type: bigint}
+      waiting_for_compute_duration_ms: {type: bigint}
+      waiting_at_capacity_duration_ms: {type: bigint}
+      execution_duration_ms: {type: bigint}
+      compilation_duration_ms: {type: bigint}
+      total_task_duration_ms: {type: bigint}
+      result_fetch_duration_ms: {type: bigint}
+      start_time: {type: timestamp}
+      end_time: {type: timestamp}
+      update_time: {type: timestamp}
+      read_partitions: {type: bigint}
+      pruned_files: {type: bigint}
+      read_files: {type: bigint}
+      read_rows: {type: bigint}
+      produced_rows: {type: bigint}
+      read_bytes: {type: bigint}
+      read_io_cache_percent: {type: tinyint}
+      from_result_cache: {type: boolean}
+      spilled_local_bytes: {type: bigint}
+      written_bytes: {type: bigint}
+      shuffle_read_bytes: {type: bigint}
+      query_source: {type: struct}
+      executed_as_user_id: {type: string}
+      executed_as: {type: string}
+      written_rows: {type: bigint}
+      written_files: {type: bigint}
+      cache_origin_statement_id: {type: string}
+      query_parameters: {type: struct}
+      query_tags: {type: "map<string,string>"}
+      pruned_files_bytes: {type: bigint}
+      read_files_bytes: {type: bigint}
+    required_columns: [account_id, workspace_id, statement_id, start_time, execution_status]
+    governance:
+      exclude_from_silver: [statement_text, error_message]   # query text is restricted content
+
+  ai_gateway_usage_source:
+    source_object: "system.ai_gateway.usage"
+    verified_at: "2026-11-25"
+    columns:
+      account_id: {type: string}
+      workspace_id: {type: string}
+      request_id: {type: string}
+      schema_version: {type: int}
+      endpoint_id: {type: string}
+      endpoint_name: {type: string}
+      endpoint_tags: {type: "map<string,string>"}
+      endpoint_metadata: {type: struct}
+      event_time: {type: timestamp}
+      latency_ms: {type: bigint}
+      time_to_first_byte_ms: {type: bigint}
+      destination_type: {type: string}
+      destination_name: {type: string}
+      destination_id: {type: string}
+      destination_model: {type: string}
+      requester: {type: string}
+      requester_type: {type: string}
+      ip_address: {type: string}
+      url: {type: string}
+      user_agent: {type: string}
+      api_type: {type: string}
+      request_tags: {type: "map<string,string>"}
+      input_tokens: {type: bigint}
+      output_tokens: {type: bigint}
+      total_tokens: {type: bigint}
+      token_details: {type: struct}
+      response_content_type: {type: string}
+      status_code: {type: int}
+      routing_information: {type: struct}
+      invocation_id: {type: string}
+      invocation_metadata: {type: struct}
+      service_type: {type: string}
+      service_id: {type: string}
+      service_name: {type: string}
+      service_tags: {type: "map<string,string>"}
+      mcp_metadata: {type: struct}
+      session_metadata: {type: struct}
+      auth_mode: {type: string}
+      model_metadata: {type: struct}
+      model_provider_metadata: {type: struct}
+    required_columns: [account_id, workspace_id, request_id, event_time]
+
+  genie_usage_source:
+    source_object: "system.billing.usage"        # derived: no dedicated Genie system table verified
+    verified_at: "2026-11-25"
+    derived: true
+    derived_from_contract: "billing_usage_source"
+    derived_predicate: "sku_name = 'GENIE_FREE_USAGE' OR product_features.genie.offering_type IS NOT NULL OR product_features.ai_bi_genie.offering_type IS NOT NULL"
+    columns:
+      account_id: {type: string}
+      workspace_id: {type: string}
+      record_id: {type: string}
+      sku_name: {type: string}
+      cloud: {type: string}
+      usage_start_time: {type: timestamp}
+      usage_end_time: {type: timestamp}
+      usage_date: {type: date}
+      ingestion_date: {type: date}
+      usage_unit: {type: string}
+      usage_quantity: {type: "decimal(38,18)"}
+      product_features: {type: struct}
+    required_columns: [record_id, sku_name, usage_start_time, usage_quantity]

@@ -1,0 +1,20 @@
+[project]
+name = "databricks-finops-starter"
+version = "1.0.0"
+description = "YAML-driven, multi-region FinOps ingestion framework for Databricks"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = [
+  "pyyaml>=6.0",          # YAML control plane (installed on Databricks runtimes)
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]  # optional linting when running locally
+line-length = 100

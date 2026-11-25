@@ -1,0 +1,42 @@
+# Source: Databricks billing usage (Phase 1 vertical slice).
+# Watermark and keys VERIFIED against live schema on 2026-11-25.
+source_id: "billing_usage"
+enabled: true
+required: true                       # required for the cost model
+source_type: "databricks_system_table"
+source_object: "system.billing.usage"
+
+target:
+  schema: "bronze"
+  table: "billing_usage_raw"
+
+ingestion:
+  mode: "incremental"
+  watermark_column: "ingestion_date"  # verified DATE; date the record landed in the system table
+  watermark_type: "date"
+  lookback_hours: 72                  # late-arriving / restated records re-read window
+  primary_key_columns: ["record_id"]  # verified unique on live data (1757/1757 distinct)
+  merge_columns: ["record_id"]
+  write_strategy: "merge"
+  batch_size: 100000
+  schedule_ref: "standard_hourly"
+
+derived_keys:
+  source_record_id_column: "record_id"
+  event_time_column: "usage_start_time"
+  updated_time_column: null           # none exists; restatements reuse record_id and merge-update
+
+schema:
+  contract_ref: "billing_usage_source"
+  additive_columns: "capture_and_review"
+  unexpected_type_change: "quarantine_and_alert"
+  missing_required_columns: "fail_source"
+
+quality_rules:
+  - non_negative_usage_quantity
+  - valid_usage_interval
+  - known_record_type
+
+retention:
+  bronze_days: 400
+  silver_days: 400

@@ -1,0 +1,41 @@
+# Source: query history (optional; verified readable WITH data).
+# Governance: statement_text and error_message are RESTRICTED — they are preserved in
+# regional Bronze payloads but excluded from Silver (see contract governance).
+source_id: "query_history"
+enabled: true
+required: false
+source_type: "databricks_system_table"
+source_object: "system.query.history"
+
+target:
+  schema: "bronze"
+  table: "query_history_raw"
+
+ingestion:
+  mode: "incremental"
+  watermark_column: "start_time"     # verified TIMESTAMP; update_time also exists but semantics are less stable
+  watermark_type: "timestamp"
+  lookback_hours: 72
+  primary_key_columns: ["statement_id"]
+  merge_columns: ["statement_id"]
+  write_strategy: "merge"
+  batch_size: 100000
+  schedule_ref: "standard_hourly"
+
+derived_keys:
+  source_record_id_column: "statement_id"
+  event_time_column: "start_time"
+  updated_time_column: "update_time"
+
+schema:
+  contract_ref: "query_history_source"
+  additive_columns: "capture_and_review"
+  unexpected_type_change: "quarantine_and_alert"
+  missing_required_columns: "fail_source"
+
+quality_rules:
+  - query_duration_non_negative
+
+retention:
+  bronze_days: 400
+  silver_days: 400

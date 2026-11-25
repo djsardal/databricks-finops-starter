@@ -1,0 +1,28 @@
+# Cost allocation policy. Allocation methods are explicit and recorded with every
+# allocated cost slice: method, version and confidence. Unassigned spend is NEVER
+# silently allocated — it stays UNALLOCATED with confidence 0.
+allocation_version: "1.0.0"
+default_cost_basis: "list_cost_estimate"    # never treated as invoice cost
+
+methods_in_priority:
+  - direct_tag
+  - workspace_mapping
+  - unallocated
+
+rules:
+  - method: direct_tag
+    description: "allocate via custom_tags['cost_center'] when present on the usage record"
+    tag_key: "cost_center"
+    confidence: 0.9
+  - method: workspace_mapping
+    description: "allocate via the workspace registry (business_unit / cost_center)"
+    registry_ref: "workspace_default"
+    confidence: 0.5
+  - method: unallocated
+    description: "explicit residual; never silently redistributed"
+    confidence: 0.0
+
+cost_centers:
+  UNALLOCATED:
+    business_unit: "unassigned"
+    owner_team: "unassigned"

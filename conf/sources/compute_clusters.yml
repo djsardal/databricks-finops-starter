@@ -1,0 +1,39 @@
+# Source: compute cluster definitions (optional; table verified readable, currently 0 rows).
+source_id: "compute_clusters"
+enabled: true
+required: false
+source_type: "databricks_system_table"
+source_object: "system.compute.clusters"
+
+target:
+  schema: "bronze"
+  table: "compute_clusters_raw"
+
+ingestion:
+  mode: "incremental"
+  watermark_column: "change_time"    # verified TIMESTAMP; change to compute definition
+  watermark_type: "timestamp"
+  lookback_hours: 72
+  primary_key_columns: ["workspace_id", "cluster_id", "change_time"]
+  merge_columns: ["workspace_id", "cluster_id", "change_time"]
+  write_strategy: "merge"
+  batch_size: 100000
+  schedule_ref: "standard_hourly"
+
+derived_keys:
+  source_record_id_column: null
+  source_record_id_expression: "concat_ws('|', workspace_id, cluster_id, cast(change_time as string))"
+  event_time_column: "change_time"
+  updated_time_column: "change_time"
+
+schema:
+  contract_ref: "compute_clusters_source"
+  additive_columns: "capture_and_review"
+  unexpected_type_change: "quarantine_and_alert"
+  missing_required_columns: "fail_source"
+
+quality_rules: []
+
+retention:
+  bronze_days: 400
+  silver_days: 400

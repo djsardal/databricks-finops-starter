@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+
+# Databricks
+.databricks/
+.bundle/
+target/
+
+# Local artifacts
+logs/
+*.log
+.DS_Store
+
+# Never commit credentials
+*.env
+*.pem
+*.key

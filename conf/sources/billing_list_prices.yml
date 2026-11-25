@@ -1,0 +1,41 @@
+# Source: Databricks published list prices (Phase 1 vertical slice).
+# VERIFIED: no reliable incremental watermark column exists (only effective-dating
+# columns price_start_time/price_end_time) -> snapshot reconcile-merge strategy.
+# Prices are never deleted on our side; absence in a partial batch is not a delete.
+source_id: "billing_list_prices"
+enabled: true
+required: true
+source_type: "databricks_system_table"
+source_object: "system.billing.list_prices"
+
+target:
+  schema: "bronze"
+  table: "billing_list_prices_raw"
+
+ingestion:
+  mode: "snapshot"                    # full reconcile each run (small table)
+  primary_key_columns: ["sku_name", "cloud", "currency_code", "usage_unit", "price_start_time"]
+  merge_columns: ["sku_name", "cloud", "currency_code", "usage_unit", "price_start_time"]
+  write_strategy: "merge"
+  batch_size: 100000
+  schedule_ref: "standard_daily_0200_utc"
+
+derived_keys:
+  source_record_id_column: null
+  source_record_id_expression: "concat_ws('|', sku_name, cloud, currency_code, usage_unit, cast(price_start_time as string))"
+  event_time_column: "price_start_time"
+  updated_time_column: null
+
+schema:
+  contract_ref: "billing_list_prices_source"
+  additive_columns: "capture_and_review"
+  unexpected_type_change: "quarantine_and_alert"
+  missing_required_columns: "fail_source"
+
+quality_rules:
+  - valid_price_interval
+  - positive_price_when_present
+
+retention:
+  bronze_days: 400
+  silver_days: 400

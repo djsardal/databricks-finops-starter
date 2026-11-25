@@ -1,0 +1,23 @@
+# FinOps region configuration.
+# cloud_region is NOT VERIFIED in this workspace (serverless hides deployment
+# metadata; accounts API returned 404). The region_id token "aws_default" is a
+# configuration placeholder — update cloud_region and region_id when the AWS
+# region is confirmed. All catalog names are derived from this token.
+region_id: "aws_default"
+cloud: "aws"
+cloud_region: "not_verified"
+data_residency_zone: "default"
+regional_catalog: "finops_dev_aws_default"
+
+collector:
+  enabled: true
+  workspace_ids: ["2660247253212705"]
+  schedule_ref: "standard_hourly"
+
+central_transfer:
+  enabled: false                     # single_workspace mode: central consolidation is local
+  method: "local_catalog"             # verified options: local_catalog. Delta Sharing API reachable but no shares configured.
+  destination_region: null
+  publish_schemas: ["silver"]
+  publish_raw_payloads: false
+  enforce_residency_policy: true

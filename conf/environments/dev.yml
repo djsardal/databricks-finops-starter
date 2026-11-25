@@ -1,0 +1,49 @@
+# FinOps environment configuration — dev
+# Secrets are NEVER stored here. Credential material lives in an approved
+# secret manager referenced at deploy time; this file holds only behavior.
+config_version: "1.0.0"
+environment: "dev"
+deployment_mode: "single_workspace"   # single_workspace | multi_workspace_single_region | multi_region_hub_spoke | regional_federated
+
+platform:
+  cloud: "aws"
+  regional_catalog_pattern: "finops_{environment}_{region}"
+  central_catalog_pattern: "finops_{environment}_global"
+  use_unity_catalog: true
+  timezone: "UTC"
+
+ingestion:
+  default_write_mode: "merge"
+  default_late_arrival_lookback_hours: 72
+  default_retry_count: 3
+  retry_backoff_seconds: [30, 120, 300]
+  max_parallel_sources: 4
+  quarantine_on_schema_drift: true
+  allow_additive_schema_evolution: true
+  allow_destructive_schema_change: false
+
+security:
+  use_service_principal: false        # dev runs on workspace identity; prod must use a service principal
+  never_store_credentials_in_yaml: true
+  redact_identity_fields_in_logs: true
+  restrict_identity_fields_in_dashboards: true
+
+recovery:
+  auto_retry_transient_errors: true
+  auto_replay_from_checkpoint: true
+  auto_recreate_missing_checkpoint: false   # requires approval (destructive)
+  auto_apply_schema_changes: false
+  pause_source_after_consecutive_failures: 5
+  require_approval_for_data_deletion: true
+
+freshness_slo:                       # starter defaults, not guaranteed SLAs
+  expected_interval_minutes: 60
+  warning_after_minutes: 90
+  critical_after_minutes: 180
+  evaluation_grace_minutes: 15
+
+reliability:
+  max_consecutive_failures: 5
+  max_retry_attempts: 3
+  max_quarantine_percentage: 1.0
+  minimum_reconciliation_match_percentage: 99.5

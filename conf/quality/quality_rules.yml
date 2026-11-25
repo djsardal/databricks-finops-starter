@@ -1,0 +1,47 @@
+# Data-quality rules evaluated after Silver normalization.
+# expression: boolean predicate. A row VIOLATES the rule when NOT(expression).
+# action: quarantine | warn | fail_source
+rules_version: "1.0.0"
+rules:
+  non_negative_usage_quantity:
+    layer: silver
+    target_table: fact_usage
+    description: "usage_quantity must not be negative"
+    expression: "usage_quantity IS NULL OR usage_quantity >= 0"
+    severity: error
+    action: quarantine
+  valid_usage_interval:
+    layer: silver
+    target_table: fact_usage
+    description: "usage_end_time must not precede usage_start_time"
+    expression: "usage_start_time IS NULL OR usage_end_time IS NULL OR usage_start_time <= usage_end_time"
+    severity: error
+    action: quarantine
+  known_record_type:
+    layer: silver
+    target_table: fact_usage
+    description: "record_type must be a documented billing correction type"
+    expression: "record_type IS NULL OR record_type IN ('ORIGINAL', 'RETRACTION', 'RESTATED')"
+    severity: warn
+    action: warn
+  valid_price_interval:
+    layer: silver
+    target_table: fact_price
+    description: "price_end_time must not precede price_start_time"
+    expression: "price_end_time IS NULL OR price_start_time <= price_end_time"
+    severity: error
+    action: quarantine
+  positive_price_when_present:
+    layer: silver
+    target_table: fact_price
+    description: "published default price must not be negative"
+    expression: "price_default IS NULL OR price_default >= 0"
+    severity: error
+    action: quarantine
+  query_duration_non_negative:
+    layer: silver
+    target_table: fact_query_execution
+    description: "durations must not be negative"
+    expression: "total_duration_ms IS NULL OR total_duration_ms >= 0"
+    severity: error
+    action: quarantine

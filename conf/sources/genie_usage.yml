@@ -1,0 +1,43 @@
+# Source: Genie usage (optional). DERIVED source: no dedicated Genie system table
+# exists in this workspace. Genie usage was VERIFIED present in billing usage via the
+# GENIE_FREE_USAGE SKU and product_features.genie / ai_bi_genie structs. This source
+# re-derives its bronze table from the billing_usage bronze payload (no extra system read).
+source_id: "genie_usage"
+enabled: true
+required: false
+source_type: "derived_system_table"
+source_object: "system.billing.usage"
+derived_from: "billing_usage"
+
+target:
+  schema: "bronze"
+  table: "genie_usage_raw"
+
+ingestion:
+  mode: "incremental"
+  watermark_column: "ingestion_date"
+  watermark_type: "date"
+  lookback_hours: 72
+  primary_key_columns: ["record_id"]
+  merge_columns: ["record_id"]
+  write_strategy: "merge"
+  batch_size: 100000
+  schedule_ref: "standard_hourly"
+
+derived_keys:
+  source_record_id_column: "record_id"
+  event_time_column: "usage_start_time"
+  updated_time_column: null
+
+schema:
+  contract_ref: "genie_usage_source"
+  additive_columns: "capture_and_review"
+  unexpected_type_change: "quarantine_and_alert"
+  missing_required_columns: "fail_source"
+
+quality_rules:
+  - non_negative_usage_quantity
+
+retention:
+  bronze_days: 400
+  silver_days: 400

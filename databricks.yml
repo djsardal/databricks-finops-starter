@@ -1,0 +1,28 @@
+# Declarative Automation Bundle (DAB) for the FinOps ingestion framework.
+# Validate with: databricks bundle validate
+# Deploy ONLY after explicit approval: databricks bundle deploy --target dev
+bundle:
+  name: databricks_finops_starter
+
+include:
+  - resources/jobs/*.job.yml
+
+variables:
+  environment:
+    description: FinOps environment (dev/test/prod)
+    default: dev
+  conf_root:
+    description: Path to the YAML control plane inside the bundle
+    default: ../conf
+
+targets:
+  dev:
+    default: true
+    mode: development
+  test:
+    mode: development
+  prod:
+    mode: production
+    # Production MUST configure a service principal run_as; never user identities.
+    # run_as:
+    #   service_principal_name: <finops-collector-sp>
